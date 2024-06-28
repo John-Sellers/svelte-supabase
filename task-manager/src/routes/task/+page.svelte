@@ -13,6 +13,7 @@
         is_complete: false,
         user_id: "",
     };
+    let userId = "";
 
     const fetchUserTasks = async () => {
         const {
@@ -25,8 +26,9 @@
         }
 
         if (session?.user) {
-            newTask.user_id = session.user.id;
-            tasks = await readTask(session.user.id);
+            userId = session.user.id;
+            newTask.user_id = userId;
+            tasks = await readTask(userId);
         } else {
             goto("/login");
         }
@@ -50,7 +52,7 @@
                     title: "",
                     description: "",
                     is_complete: false,
-                    user_id: session.user.id,
+                    user_id: userId,
                 };
             }
         }
@@ -63,11 +65,21 @@
         }
     };
 
+    const logout = async () => {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+            console.error("Error signing out:", error);
+        } else {
+            goto("/login");
+        }
+    };
+
     onMount(fetchUserTasks);
 </script>
 
 <div class={styles.container}>
     <h1>Task Management</h1>
+    <p>User ID: {userId}</p>
 
     <form on:submit|preventDefault={addTask}>
         <input
@@ -93,6 +105,8 @@
             </li>
         {/each}
     </ul>
+
+    <button on:click={logout}>Logout</button>
 
     <nav>
         <ul>
