@@ -4,6 +4,7 @@
     import { supabase } from "../../supabaseClient";
     import type { Task } from "../../type";
     import { goto } from "$app/navigation";
+    import styles from "./task.module.css";
 
     let tasks: Task[] = [];
     let newTask: Omit<Task, "id" | "created_at"> = {
@@ -65,29 +66,38 @@
     onMount(fetchUserTasks);
 </script>
 
-<h1>Task Management</h1>
+<div class={styles.container}>
+    <h1>Task Management</h1>
 
-<form on:submit|preventDefault={addTask}>
-    <input
-        type="text"
-        bind:value={newTask.title}
-        placeholder="Title"
-        required
-    />
-    <input
-        type="text"
-        bind:value={newTask.description}
-        placeholder="Description"
-        required
-    />
-    <button type="submit">Add Task</button>
-</form>
+    <form on:submit|preventDefault={addTask}>
+        <input
+            type="text"
+            bind:value={newTask.title}
+            placeholder="Title"
+            required
+        />
+        <input
+            type="text"
+            bind:value={newTask.description}
+            placeholder="Description"
+            required
+        />
+        <button type="submit">Add Task</button>
+    </form>
 
-<ul>
-    {#each tasks as task}
-        <li>
-            <strong>{task.title}</strong> - {task.description}
-            <button on:click={() => removeTask(task.id)}>Delete</button>
-        </li>
-    {/each}
-</ul>
+    <ul>
+        {#each tasks as task}
+            <li>
+                <strong>{task.title}</strong> - {task.description}
+                <button on:click={() => removeTask(task.id)}>Delete</button>
+            </li>
+        {/each}
+    </ul>
+
+    <nav>
+        <ul>
+            <li><a href="/">Home</a></li>
+            <li><a href="/login">Login</a></li>
+        </ul>
+    </nav>
+</div>

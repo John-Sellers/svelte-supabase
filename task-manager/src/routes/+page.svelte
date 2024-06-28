@@ -1,5 +1,12 @@
-Welcome To Task Manager
+<!-- src/routes/+page.svelte -->
+<script>
+</script>
 
-<!-- create a hyperlink that redirects to /task -->
+<h1>Welcome to the Task Manager</h1>
 
-<a href="/task">Go to Task</a>
+<nav>
+    <ul>
+        <li><a href="/login">Login</a></li>
+        <li><a href="/signup">Sign Up</a></li>
+    </ul>
+</nav>
