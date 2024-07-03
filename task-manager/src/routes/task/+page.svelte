@@ -16,11 +16,14 @@
     let userEmail: string = "";
     let loading = true;
     let errorMessage = "";
+    let showModal = false;
+    let taskToEdit: Task | null = null;
 
     const fetchUserTasks = async () => {
         try {
             const { data: sessionData, error: sessionError } =
                 await supabase.auth.getSession();
+            console.log("Session Data:", sessionData); // Debugging session data
             if (sessionError) {
                 console.error("Error fetching session:", sessionError);
                 errorMessage = "Failed to fetch session. Please try again.";
@@ -29,18 +32,25 @@
 
             if (sessionData.session?.user) {
                 userEmail = sessionData.session.user.email || "";
-                id = sessionData.session.user.id || "1";
+                id = sessionData.session.user.id || "";
                 newTask.user_id = id;
+
+                console.log("User ID:", id); // Debugging user ID
 
                 const { data: tasksData, error: tasksError } = await supabase
                     .from("task")
                     .select("*")
                     .eq("user_id", id);
 
+                console.log("Tasks Data:", tasksData); // Debugging tasks data
                 if (tasksError) {
                     console.error("Error fetching tasks:", tasksError);
                     errorMessage = "Failed to fetch tasks. Please try again.";
                     return;
+                }
+
+                if (tasksData.length === 0) {
+                    console.warn("No tasks found for the user ID:", id); // Log when no tasks are found
                 }
 
                 tasks = tasksData;
@@ -79,6 +89,33 @@
         }
     };
 
+    const updateTask = async () => {
+        if (taskToEdit) {
+            try {
+                const { error } = await supabase
+                    .from("task")
+                    .update({
+                        title: taskToEdit.title,
+                        description: taskToEdit.description,
+                    })
+                    .eq("id", taskToEdit.id);
+
+                if (error) {
+                    console.error("Error updating task:", error);
+                    errorMessage = "Failed to update task. Please try again.";
+                    return;
+                }
+
+                fetchUserTasks();
+                showModal = false;
+                taskToEdit = null;
+            } catch (err) {
+                console.error("Unexpected error updating task:", err);
+                errorMessage = "Unexpected error occurred. Please try again.";
+            }
+        }
+    };
+
     const removeTask = async (taskId: string) => {
         try {
             const { error } = await supabase
@@ -112,6 +149,16 @@
             console.error("Unexpected error logging out:", err);
             errorMessage = "Unexpected error occurred. Please try again.";
         }
+    };
+
+    const openEditModal = (task: Task) => {
+        taskToEdit = { ...task };
+        showModal = true;
+    };
+
+    const closeEditModal = () => {
+        showModal = false;
+        taskToEdit = null;
     };
 
     onMount(fetchUserTasks);
@@ -155,6 +202,9 @@
                         <button on:click={() => removeTask(task.id)}
                             >Delete</button
                         >
+                        <button on:click={() => openEditModal(task)}
+                            >Update</button
+                        >
                     </div>
                 {/each}
             </div>
@@ -168,5 +218,47 @@
                 <li><a href="/login">Login</a></li>
             </ul>
         </nav>
+
+        {#if showModal && taskToEdit}
+            <div class="modal">
+                <div class="modal-content">
+                    <h3>Edit Task</h3>
+                    <input
+                        type="text"
+                        bind:value={taskToEdit.title}
+                        placeholder="Title"
+                        required
+                    />
+                    <input
+                        type="text"
+                        bind:value={taskToEdit.description}
+                        placeholder="Description"
+                        required
+                    />
+                    <button on:click={updateTask}>Save</button>
+                    <button on:click={closeEditModal}>Cancel</button>
+                </div>
+            </div>
+        {/if}
     {/if}
 </div>
+
+<style>
+    .modal {
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        justify-content: center;
+        align-items: center;
+        background-color: rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-content {
+        background-color: white;
+        padding: 20px;
+        border-radius: 5px;
+    }
+</style>
