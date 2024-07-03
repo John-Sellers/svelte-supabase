@@ -17,7 +17,9 @@
     let loading = true;
     let errorMessage = "";
     let showModal = false;
+    let showDeleteModal = false;
     let taskToEdit: Task | null = null;
+    let taskToDelete: Task | null = null;
 
     const fetchUserTasks = async () => {
         try {
@@ -116,23 +118,32 @@
         }
     };
 
-    const removeTask = async (taskId: string) => {
-        try {
-            const { error } = await supabase
-                .from("task")
-                .delete()
-                .eq("id", taskId);
+    const confirmRemoveTask = (task: Task) => {
+        taskToDelete = task;
+        showDeleteModal = true;
+    };
 
-            if (error) {
-                console.error("Error removing task:", error);
-                errorMessage = "Failed to remove task. Please try again.";
-                return;
+    const removeTask = async () => {
+        if (taskToDelete) {
+            try {
+                const { error } = await supabase
+                    .from("task")
+                    .delete()
+                    .eq("id", taskToDelete.id);
+
+                if (error) {
+                    console.error("Error removing task:", error);
+                    errorMessage = "Failed to remove task. Please try again.";
+                    return;
+                }
+
+                tasks = tasks.filter((task) => task.id !== taskToDelete.id);
+                showDeleteModal = false;
+                taskToDelete = null;
+            } catch (err) {
+                console.error("Unexpected error removing task:", err);
+                errorMessage = "Unexpected error occurred. Please try again.";
             }
-
-            tasks = tasks.filter((task) => task.id !== taskId);
-        } catch (err) {
-            console.error("Unexpected error removing task:", err);
-            errorMessage = "Unexpected error occurred. Please try again.";
         }
     };
 
@@ -159,6 +170,11 @@
     const closeEditModal = () => {
         showModal = false;
         taskToEdit = null;
+    };
+
+    const closeDeleteModal = () => {
+        showDeleteModal = false;
+        taskToDelete = null;
     };
 
     onMount(fetchUserTasks);
@@ -199,7 +215,7 @@
                     <div class={styles.stickyNote}>
                         <h3>{task.title}</h3>
                         <p>{task.description}</p>
-                        <button on:click={() => removeTask(task.id)}
+                        <button on:click={() => confirmRemoveTask(task)}
                             >Delete</button
                         >
                         <button on:click={() => openEditModal(task)}
@@ -240,25 +256,16 @@
                 </div>
             </div>
         {/if}
+
+        {#if showDeleteModal && taskToDelete}
+            <div class="modal">
+                <div class="modal-content">
+                    <h3>Are you sure you want to delete this task?</h3>
+                    <p>{taskToDelete.title}</p>
+                    <button on:click={removeTask}>Yes, delete</button>
+                    <button on:click={closeDeleteModal}>Cancel</button>
+                </div>
+            </div>
+        {/if}
     {/if}
 </div>
-
-<style>
-    .modal {
-        display: flex;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        justify-content: center;
-        align-items: center;
-        background-color: rgba(0, 0, 0, 0.5);
-    }
-
-    .modal-content {
-        background-color: white;
-        padding: 20px;
-        border-radius: 5px;
-    }
-</style>
