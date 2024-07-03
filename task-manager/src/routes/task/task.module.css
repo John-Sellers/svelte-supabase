@@ -57,3 +57,39 @@ nav ul li a {
 nav ul li a:hover {
     color: purple;
 }
+
+.stickyNotesContainer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.stickyNote {
+    background-color: #ffeb3b;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    width: 200px;
+}
+
+.stickyNote h3 {
+    margin-top: 0;
+}
+
+.stickyNote p {
+    margin: 8px 0;
+}
+
+.stickyNote button {
+    background-color: #f44336;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.stickyNote button:hover {
+    background-color: #d32f2f;
+}
