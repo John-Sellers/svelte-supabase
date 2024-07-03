@@ -137,7 +137,7 @@
                     return;
                 }
 
-                tasks = tasks.filter((task) => task.id !== taskToDelete.id);
+                tasks = tasks.filter((task) => task.id !== taskToDelete!.id);
                 showDeleteModal = false;
                 taskToDelete = null;
             } catch (err) {
@@ -261,7 +261,7 @@
             <div class="modal">
                 <div class="modal-content">
                     <h3>Are you sure you want to delete this task?</h3>
-                    <p>{taskToDelete.title}</p>
+                    <p>{taskToDelete?.title}</p>
                     <button on:click={removeTask}>Yes, delete</button>
                     <button on:click={closeDeleteModal}>Cancel</button>
                 </div>
